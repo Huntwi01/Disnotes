@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+:root {
+  --background: #1e1f22;
+  --foreground: #dbdee1;
+  
+  /* Deeper Discord Palette */
+  --discord-sidebar: #111214;
+  --discord-nav: #1e1f22;
+  --discord-main: #232428;
+  --discord-chat: #2b2d31;
+  --discord-header: #1e1f22;
+  --discord-text: #dbdee1;
+  --discord-muted: #949ba4;
+  --discord-interactive: #b5bac1;
+  --discord-active: #ffffff;
+  --discord-brand: #5865f2;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  
+  --color-sidebar: var(--discord-sidebar);
+  --color-nav: var(--discord-nav);
+  --color-main: var(--discord-main);
+  --color-chat: var(--discord-chat);
+  --color-text-normal: var(--discord-text);
+  --color-text-muted: var(--discord-muted);
+  --color-interactive-normal: var(--discord-interactive);
+  --color-interactive-active: var(--discord-active);
+  --color-brand: var(--discord-brand);
+
+  --font-sans: "Inter", var(--font-geist-sans);
+}
+
+body {
+  background: var(--discord-main);
+  color: var(--discord-text);
+  margin: 0;
+  overflow: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Custom Scrollbar for Discord feel */
+::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #1e1f22;
+  min-height: 40px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #2b2d31;
+}
+
+::-webkit-scrollbar-thumb, ::-webkit-scrollbar-track {
+  border: 4px solid transparent;
+  background-clip: padding-box;
+  border-radius: 8px;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
