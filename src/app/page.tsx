@@ -231,11 +231,11 @@ export default function Home() {
     const data = await Actions.fetchAllData();
     const formattedProjects: Project[] = data.projects.map(p => ({
       ...p,
-      pages: data.pages.filter(pg => pg.projectId === p.id).map(pg => ({ id: pg.id, name: pg.name, status: pg.status }))
+      pages: data.pages.filter(pg => pg.projectId === p.id).map(pg => ({ id: pg.id, name: pg.name, status: pg.status as Page["status"] }))
     }));
     
     setProjects(formattedProjects);
-    setNotes(data.notes);
+    setNotes(data.notes.map(n => ({ ...n, status: n.status as Note["status"] })));
     setPasswords(data.passwords || []);
     
     const settingsMap = (data.settings || []).reduce((acc: any, s: any) => ({ ...acc, [s.key]: s.value }), {});
@@ -930,7 +930,7 @@ export default function Home() {
                 onClick={async () => {
                   if (timeSeconds > 0) {
                     const sessionNote = `Focused on: ${timerTask || "General Tasks"} for ${formatTime(timeSeconds)}`;
-                    await Actions.addNote(activeProjectId, activePageId, "User", sessionNote);
+                    await Actions.addNote({ id: Date.now().toString(), user: "User", content: sessionNote, timestamp: "Today at " + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), pageId: activePageId });
                     loadData();
                     setTimeSeconds(0);
                     setTimerRunning(false);
@@ -1081,9 +1081,9 @@ export default function Home() {
     /* Default: Chat/Note View (Simplified for Pro) */
     return (
       <>
-        <div className="flex-1 overflow-y-auto p-4 space-y-6 no-scrollbar">
+        <div className="flex-1 overflow-y-auto px-4 py-3 no-scrollbar">
           {/* Context Alert for Pro */}
-          <div className="bg-brand/10 border border-brand/20 p-4 rounded flex items-start space-x-3">
+          <div className="bg-brand/10 border border-brand/20 p-4 rounded flex items-start space-x-3 mb-3">
             <Workflow size={20} className="text-brand flex-shrink-0" />
             <div className="text-xs text-brand leading-relaxed">
               <span className="font-bold block">INTELLIGENCE LAYER ACTIVE</span>
@@ -1092,41 +1092,34 @@ export default function Home() {
           </div>
 
           {filteredNotes.map((note) => (
-            <div 
-              key={note.id} 
+            <div
+              key={note.id}
               draggable
               onDragStart={(e) => onDragStart(e, note.id)}
               onDragOver={onDragOver}
               onDrop={(e) => onDrop(e, note.id)}
-              className={`group flex space-x-4 px-4 py-3 rounded-lg hover:bg-white/[0.02] transition-all relative cursor-move border border-transparent hover:border-white/[0.05] ${
+              className={`group relative flex items-baseline px-2 py-[3px] rounded hover:bg-white/[0.03] transition-all cursor-move ${
                 draggedNoteId === note.id ? "opacity-30" : "opacity-100"
               }`}
             >
-              <div className={`w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-white font-bold mt-0.5 shadow-lg ${note.user === "System Agent" ? "bg-brand/20 border border-brand/30 text-brand" : "bg-nav border border-white/10"}`}>
-                {note.user === "System Agent" ? <Cpu size={20} /> : note.user[0]}
+              <span title={note.timestamp} className="w-[54px] flex-shrink-0 text-right mr-3 text-[10px] font-medium text-text-muted/50 tabular-nums select-none">{note.timestamp.replace(/^(Today|Yesterday|[A-Z][a-z]+) at /, "")}</span>
+              <div className="flex-1 min-w-0 text-[13px] leading-[1.35]">
+                <span className={`font-bold tracking-tight mr-2 hover:underline cursor-pointer ${note.user === "System Agent" ? "text-brand" : "text-white"}`}>{note.user}</span>
+                <span className={`whitespace-pre-wrap selection:bg-brand/30 ${note.user === "System Agent" ? "italic text-brand/90" : "text-text-normal/90"}`}>{note.content}</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline space-x-2 mb-1">
-                  <span className={`font-bold text-[13px] tracking-tight hover:underline cursor-pointer ${note.user === "System Agent" ? "text-brand" : "text-white"}`}>{note.user}</span>
-                  <span className="text-[10px] font-medium text-text-muted/60 uppercase tracking-wider">{note.timestamp}</span>
-                  <button 
-                    onClick={async () => {
-                      if (settings.skipDeleteConfirm === "true") {
-                        await Actions.deleteNote(note.id);
-                        loadData();
-                      } else {
-                        setDeleteConfirmation({ show: true, noteId: note.id });
-                      }
-                    }}
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 text-text-muted hover:text-red-400 rounded transition-all"
-                  >
-                    <Trash2 size={12} />
-                  </button>
-                </div>
-                <div className={`text-[14px] leading-relaxed text-text-normal/90 whitespace-pre-wrap selection:bg-brand/30 ${note.user === "System Agent" ? "p-4 bg-brand/5 rounded-xl border border-brand/10 mt-2 font-medium italic text-brand/90" : ""}`}>
-                  {note.content}
-                </div>
-              </div>
+              <button
+                onClick={async () => {
+                  if (settings.skipDeleteConfirm === "true") {
+                    await Actions.deleteNote(note.id);
+                    loadData();
+                  } else {
+                    setDeleteConfirmation({ show: true, noteId: note.id });
+                  }
+                }}
+                className="opacity-0 group-hover:opacity-100 absolute right-2 top-[3px] p-1 hover:bg-red-500/20 text-text-muted hover:text-red-400 rounded transition-all"
+              >
+                <Trash2 size={12} />
+              </button>
             </div>
           ))}
         </div>
